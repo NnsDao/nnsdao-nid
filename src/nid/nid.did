@@ -1,0 +1,20 @@
+type Metadata = record {
+  owner : opt principal;
+  user : vec principal;
+  canister_id : text;
+};
+type Result = variant { Ok; Err : text };
+type Result_1 = variant { Ok : Metadata; Err : text };
+type StakingItem = record {
+  "principal" : opt principal;
+  token : TokenType;
+  duration : nat8;
+  start_time : opt nat64;
+};
+type TokenType = variant { NDP : nat64 };
+service : {
+  add_staking : (StakingItem) -> (Result);
+  metadata : () -> (Result_1) query;
+  staking_list : () -> (vec record { nat64; StakingItem }) query;
+  system_time : () -> (nat64) query;
+}

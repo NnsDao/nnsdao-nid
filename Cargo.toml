@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "src/nid",
+]
+
+
+[profile.release]
+lto = true
+opt-level = 'z'
+codegen-units = 1
