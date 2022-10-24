@@ -1,4 +1,4 @@
-use crate::metadata::is_owner;
+use crate::metadata::is_admin;
 use crate::utils::{find_binding_nid, get_nid, NIDType, PrincipalIdText};
 use candid::{CandidType, Deserialize, Principal};
 use std::collections::HashMap;
@@ -61,13 +61,15 @@ impl User {
             Err("Invalid NID".to_string())
         }
     }
-    pub(crate) fn add_stake() -> Result<(), String> {
+    pub(crate) fn add_stake(&mut self, item: StakeItem) -> Result<UserItem, String> {
         let from = ic_cdk::caller();
-        if !is_owner(from) {
+        if !is_admin(from) {
             return Err("Unauthorized operation!".to_string());
         }
-        todo!();
-        Ok(())
+        let nid = find_binding_nid(self)?;
+        let data = self.member.get_mut(&nid).unwrap();
+        data.stake.push(StakeItem { ..item });
+        Ok(data.clone())
     }
 }
 
@@ -86,12 +88,13 @@ struct AssertTokenItem {
 #[derive(Deserialize, CandidType, Debug, Clone)]
 struct UserLog {
     event: String,
+    detail: String,
     time: i64,
 }
 #[derive(Deserialize, CandidType, Debug, Clone)]
-struct StakeItem {
+pub struct StakeItem {
     project: String,
-    interest: String,
+    profit: String,
     start_time: u64,
     duration: StakeItemDuration,
     status: StakeItemStatus,
@@ -102,11 +105,11 @@ pub struct UserItem {
     avatar: String,
     intro: String,
     nid: NIDType,
-    asset: HashMap<String, AssertTokenItem>,
-    badge: Vec<String>,
     credit: u64,
     level: u64,
     log: Vec<UserLog>,
+    // asset: HashMap<String, AssertTokenItem>,
+    badge: Vec<String>,
     stake: Vec<StakeItem>,
 }
 

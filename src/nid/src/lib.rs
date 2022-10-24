@@ -1,5 +1,5 @@
 use crate::metadata::use_admin;
-use crate::user::{BasicUserInfo, Wallet};
+use crate::user::{BasicUserInfo, StakeItem, UserItem, Wallet};
 
 use candid::{candid_method, Principal};
 use ic_cdk::storage;
@@ -53,6 +53,12 @@ pub fn user_info() -> Result<user::UserItem, String> {
 #[candid_method(update)]
 pub fn update_user_info(user: BasicUserInfo) -> Result<(), String> {
     USER.with(|data| data.borrow_mut().update_user_info(user))
+}
+
+#[update]
+#[candid_method(update)]
+pub fn add_stake(item: StakeItem) -> Result<UserItem, String> {
+    USER.with(|data| data.borrow_mut().add_stake(item))
 }
 
 #[query]

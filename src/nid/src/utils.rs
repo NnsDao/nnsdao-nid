@@ -17,7 +17,7 @@ pub(crate) fn find_binding_nid(user: &User) -> Result<u64, String> {
             return Ok(*_nid);
         }
     }
-    Err("Invalid NID".to_owned())
+    Err("Can not find binding NID,please bind NID first at nomos platform".to_owned())
 }
 pub(crate) fn is_own(user: &User, nid: NIDType) -> bool {
     let caller = ic_cdk::caller();
