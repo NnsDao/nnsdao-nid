@@ -1,6 +1,6 @@
 use crate::metadata::is_admin;
 use crate::utils::{find_binding_nid, get_nid, NIDType, PrincipalIdText};
-use candid::{CandidType, Deserialize, Principal};
+use candid::{CandidType, Deserialize};
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug, CandidType, Default, Clone)]
@@ -30,10 +30,42 @@ impl User {
             }
         }
     }
-    pub(crate) fn user_info(&self) -> Result<UserItem, String> {
+    pub(crate) fn user_info(&self) -> Result<TotalUserInfo, String> {
         // let caller = ic_cdk::caller();
         let nid = find_binding_nid(self)?;
-        Ok(self.member.get(&nid).unwrap().clone())
+        let caller = ic_cdk::caller();
+        let item = self.member.get(&nid).unwrap().clone();
+        let UserItem {
+            nickname,
+            avatar,
+            intro,
+            nid,
+            credit,
+            level,
+            log,
+            badge,
+            stake,
+        } = item;
+
+        let wallet: Vec<Wallet> = self
+            .binding_wallet
+            .clone()
+            .into_iter()
+            .filter(|wallet| wallet.2 == caller.to_text())
+            .collect();
+
+        Ok(TotalUserInfo {
+            nickname,
+            avatar,
+            intro,
+            nid,
+            credit,
+            level,
+            log,
+            badge,
+            stake,
+            wallet,
+        })
     }
     pub(crate) fn update_user_info(&mut self, user: BasicUserInfo) -> Result<(), String> {
         let nid = find_binding_nid(self)?;
@@ -99,6 +131,21 @@ pub struct StakeItem {
     duration: StakeItemDuration,
     status: StakeItemStatus,
 }
+#[derive(Deserialize, CandidType, Debug, Default, Clone)]
+pub struct TotalUserInfo {
+    nickname: String,
+    avatar: String,
+    intro: String,
+    nid: NIDType,
+    credit: u64,
+    level: u64,
+    log: Vec<UserLog>,
+    // asset: HashMap<String, AssertTokenItem>,
+    badge: Vec<String>,
+    stake: Vec<StakeItem>,
+    wallet: Vec<Wallet>,
+}
+
 #[derive(Deserialize, CandidType, Debug, Default, Clone)]
 pub struct UserItem {
     nickname: String,

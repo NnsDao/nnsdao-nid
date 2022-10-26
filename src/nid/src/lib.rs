@@ -46,7 +46,13 @@ pub fn bind_wallet(wallet: Wallet) -> Result<(), String> {
 
 #[query]
 #[candid_method(query)]
-pub fn user_info() -> Result<user::UserItem, String> {
+pub fn get_bind_wallet() -> Vec<Wallet> {
+    USER.with(|data| data.borrow().binding_wallet.clone())
+}
+
+#[query]
+#[candid_method(query)]
+pub fn user_info() -> Result<user::TotalUserInfo, String> {
     USER.with(|data| data.borrow().user_info())
 }
 #[update]
