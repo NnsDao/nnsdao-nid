@@ -51,7 +51,7 @@ impl User {
             .binding_wallet
             .clone()
             .into_iter()
-            .filter(|wallet| wallet.2 == caller.to_text())
+            .filter(|wallet| wallet.0 == nid)
             .collect();
 
         Ok(TotalUserInfo {
