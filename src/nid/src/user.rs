@@ -84,12 +84,22 @@ impl User {
     pub(crate) fn bind_wallet(&mut self, wallet: Wallet) -> Result<(), String> {
         let nid = find_binding_nid(self)?;
         if nid == wallet.0 {
+            self.is_already_bind(nid, wallet.2.clone())?;
             self.binding_wallet.push(wallet);
             Ok(())
         } else {
             Err("Invalid NID".to_string())
         }
     }
+    fn is_already_bind(&self, nid: NIDType, principal_id_text: String) -> Result<(), String> {
+        for wallet in &self.binding_wallet {
+            if wallet.0 == nid && wallet.2 == principal_id_text {
+                return Err("Current wallet has already bind".to_string());
+            }
+        }
+        Ok(())
+    }
+
     pub(crate) fn add_stake(&mut self, item: StakeItem) -> Result<UserItem, String> {
         let from = ic_cdk::caller();
         if !is_admin(from) {
