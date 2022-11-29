@@ -34,7 +34,7 @@ pub fn add_admin(principal: Principal) -> Result<(), String> {
 
 #[update]
 #[candid_method(update)]
-pub fn login(wallet_type: String) -> Result<user::UserItem, String> {
+pub fn login(wallet_type: String) -> Result<user::TotalUserInfo, String> {
     USER.with(|data| data.borrow_mut().login(wallet_type))
 }
 

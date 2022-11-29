@@ -10,25 +10,22 @@ pub(crate) struct User {
 }
 
 impl User {
-    pub(crate) fn login(&mut self, wallet_type: String) -> Result<UserItem, String> {
+    pub(crate) fn login(&mut self, wallet_type: String) -> Result<TotalUserInfo, String> {
         let caller = ic_cdk::caller();
-        match find_binding_nid(self) {
-            Ok(nid) => return Ok(self.member.get(&nid).unwrap().clone()),
-            Err(_str) => {
-                let nid = get_nid();
-                self.binding_wallet
-                    .push(Wallet(nid, wallet_type, caller.to_text()));
-                self.member.insert(
+        if let Err(_str) = find_binding_nid(self) {
+            let nid = get_nid();
+            self.binding_wallet
+                .push(Wallet(nid, wallet_type, caller.to_text()));
+            self.member.insert(
+                nid,
+                UserItem {
+                    level: 1,
                     nid,
-                    UserItem {
-                        level: 1,
-                        nid,
-                        ..Default::default()
-                    },
-                );
-                return Ok(self.member.get(&nid).unwrap().clone());
-            }
-        }
+                    ..Default::default()
+                },
+            );
+        };
+        self.user_info()
     }
     pub(crate) fn user_info(&self) -> Result<TotalUserInfo, String> {
         // let caller = ic_cdk::caller();
