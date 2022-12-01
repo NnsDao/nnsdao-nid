@@ -21,6 +21,7 @@ impl User {
                 UserItem {
                     level: 1,
                     nid,
+                    nickname:caller.to_text(),
                     ..Default::default()
                 },
             );
