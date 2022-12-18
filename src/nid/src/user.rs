@@ -15,13 +15,14 @@ impl User {
         if let Err(_str) = find_binding_nid(self) {
             let nid = get_nid();
             self.binding_wallet
-                .push(Wallet(nid, wallet_type, caller.to_text()));
+                .push(Wallet(nid.clone(), wallet_type, caller.to_text()));
             self.member.insert(
-                nid,
+                nid.clone(),
                 UserItem {
                     level: 1,
                     nid,
-                    nickname:caller.to_text(),
+                    nickname: caller.to_text(),
+                    last_login_at: ic_cdk::api::time(),
                     ..Default::default()
                 },
             );
@@ -31,7 +32,7 @@ impl User {
     pub(crate) fn user_info(&self) -> Result<TotalUserInfo, String> {
         // let caller = ic_cdk::caller();
         let nid = find_binding_nid(self)?;
-        let caller = ic_cdk::caller();
+        // let caller = ic_cdk::caller();
         let item = self.member.get(&nid).unwrap().clone();
         let UserItem {
             nickname,
@@ -43,6 +44,8 @@ impl User {
             log,
             badge,
             stake,
+            last_login_at,
+            social,
         } = item;
 
         let wallet: Vec<Wallet> = self
@@ -63,24 +66,28 @@ impl User {
             badge,
             stake,
             wallet,
+            last_login_at,
+            social,
         })
     }
-    pub(crate) fn update_user_info(&mut self, user: BasicUserInfo) -> Result<(), String> {
+    pub(crate) fn update_user_info(
+        &mut self,
+        user: BasicUserInfo,
+    ) -> Result<TotalUserInfo, String> {
         let nid = find_binding_nid(self)?;
-        if nid != user.nid {
-            return Err("NID does not match".to_string());
-        }
+        // if nid != user.nid {
+        //     return Err("NID does not match".to_string());
+        // }
         let data = self.member.get(&nid).unwrap();
-        self.member.insert(
-            nid,
-            UserItem {
-                nickname: user.nickname,
-                avatar: user.avatar,
-                intro: user.intro,
-                ..data.clone()
-            },
-        );
-        Ok(())
+        let new_data = UserItem {
+            nickname: user.nickname,
+            avatar: user.avatar,
+            intro: user.intro,
+            social: user.social,
+            ..data.clone()
+        };
+        self.member.insert(nid, new_data);
+        self.user_info()
     }
     pub(crate) fn bind_wallet(&mut self, wallet: Wallet) -> Result<(), String> {
         let nid = find_binding_nid(self)?;
@@ -146,12 +153,14 @@ pub struct TotalUserInfo {
     intro: String,
     nid: NIDType,
     credit: u64,
+    social: HashMap<String, String>,
     level: u64,
     log: Vec<UserLog>,
     // asset: HashMap<String, AssertTokenItem>,
     badge: Vec<String>,
     stake: Vec<StakeItem>,
     wallet: Vec<Wallet>,
+    last_login_at: u64,
 }
 
 #[derive(Deserialize, CandidType, Debug, Default, Clone)]
@@ -162,18 +171,20 @@ pub struct UserItem {
     nid: NIDType,
     credit: u64,
     level: u64,
+    social: HashMap<String, String>,
     log: Vec<UserLog>,
     // asset: HashMap<String, AssertTokenItem>,
     badge: Vec<String>,
     stake: Vec<StakeItem>,
+    last_login_at: u64,
 }
 
 #[derive(Deserialize, CandidType, Debug, Clone)]
 pub struct BasicUserInfo {
-    nid: NIDType,
     nickname: String,
     avatar: String,
     intro: String,
+    social: HashMap<String, String>,
 }
 
 #[derive(Deserialize, CandidType, Debug, Clone)]

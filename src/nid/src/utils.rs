@@ -1,20 +1,17 @@
 use crate::user::{User, Wallet};
+use uuid::Uuid;
 
-pub static mut NID: u64 = 0;
-pub type NIDType = u64;
+pub type NIDType = String;
 pub(crate) type PrincipalIdText = String;
 
-pub(crate) fn get_nid() -> u64 {
-    unsafe {
-        NID += 1;
-        NID
-    }
+pub(crate) fn get_nid() -> String {
+    Uuid::new_v4().to_string()
 }
-pub(crate) fn find_binding_nid(user: &User) -> Result<u64, String> {
+pub(crate) fn find_binding_nid(user: &User) -> Result<String, String> {
     let caller = ic_cdk::caller();
     for Wallet(_nid, _name, principal) in &user.binding_wallet {
         if *principal == caller.to_text() {
-            return Ok(*_nid);
+            return Ok(_nid.to_string());
         }
     }
     Err("Can not find binding NID,please bind NID first at nomos platform".to_owned())
@@ -28,4 +25,14 @@ pub(crate) fn is_own(user: &User, nid: NIDType) -> bool {
         }
     }
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_name() {
+        println!("new uuid {}", get_nid())
+    }
 }

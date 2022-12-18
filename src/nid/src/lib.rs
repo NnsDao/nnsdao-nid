@@ -57,7 +57,7 @@ pub fn user_info() -> Result<user::TotalUserInfo, String> {
 }
 #[update]
 #[candid_method(update)]
-pub fn update_user_info(user: BasicUserInfo) -> Result<(), String> {
+pub fn update_user_info(user: BasicUserInfo) -> Result<user::TotalUserInfo, String> {
     USER.with(|data| data.borrow_mut().update_user_info(user))
 }
 
