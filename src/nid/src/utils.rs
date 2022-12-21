@@ -1,11 +1,11 @@
-use crate::user::{User, Wallet};
-use uuid::Uuid;
+use candid::Principal;
 
+use crate::user::{User, Wallet};
 pub type NIDType = String;
 pub(crate) type PrincipalIdText = String;
 
 pub(crate) fn get_nid() -> String {
-    Uuid::new_v4().to_string()
+    Principal::from_slice(&ic_cdk::api::time().to_be_bytes()).to_text()
 }
 pub(crate) fn find_binding_nid(user: &User) -> Result<String, String> {
     let caller = ic_cdk::caller();
