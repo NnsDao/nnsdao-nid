@@ -12,20 +12,27 @@ pub(crate) struct User {
 impl User {
     pub(crate) fn login(&mut self, wallet_type: String) -> Result<TotalUserInfo, String> {
         let caller = ic_cdk::caller();
-        if let Err(_str) = find_binding_nid(self) {
-            let nid = get_nid();
-            self.binding_wallet
-                .push(Wallet(nid.clone(), wallet_type, caller.to_text()));
-            self.member.insert(
-                nid.clone(),
-                UserItem {
-                    level: 1,
-                    nid,
-                    nickname: caller.to_text(),
-                    last_login_at: ic_cdk::api::time(),
-                    ..Default::default()
-                },
-            );
+        match find_binding_nid(self) {
+            Err(_str) => {
+                let nid = get_nid();
+                self.binding_wallet
+                    .push(Wallet(nid.clone(), wallet_type, caller.to_text()));
+                self.member.insert(
+                    nid.clone(),
+                    UserItem {
+                        level: 1,
+                        nid,
+                        nickname: caller.to_text(),
+                        last_login_at: ic_cdk::api::time(),
+                        ..Default::default()
+                    },
+                );
+            }
+            Ok(nid) => {
+                if let Some(info) = self.member.get_mut(&nid) {
+                    info.last_login_at = ic_cdk::api::time()
+                };
+            }
         };
         self.user_info()
     }
